@@ -1,0 +1,18 @@
+{
+  "name": "arbairdrop",
+  "version": "1.0.0",
+  "description": "js flashbot bundlers and activities",
+  "main": "arbairdrop.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node scripts/arbairdrop.js"
+  },
+  "author": "an0nbot",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "node-fetch": "^2.6.7",
+    "web3": "^1.8.1"
+  }
+}
