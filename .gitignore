@@ -4,6 +4,6 @@ node_modules
 scripts/wallets.js
 misc
 
-contracts/ERC20
-contracts/extensions
-contracts/utils
+/contract/ERC20/
+/contract/utils/
+/contract/extensions/
