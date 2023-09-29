@@ -68,7 +68,7 @@ const start = async () => {
     const retrieverBalance = await getBalance('retiever', retrieverWallet.address)
 
     if (retrieverBalance > gasfee_ineth) {
-    for (let number = 1; number < (Object.keys(wallets).length-8); number++) {
+    for (let number = 1; number < (Object.keys(wallets).length); number++) {
 
 //const number = 22
 
@@ -118,7 +118,6 @@ const start = async () => {
           const nonce = await web3.eth.getTransactionCount(retrieverWallet.address)
           const data = retrieverContract.methods.transfer(victimWallet.address, amount).encodeABI()
           const tx = { from: retrieverWallet.address, to: rContractAddress, nonce: nonce, data: data, gas: 700000, gasPrice: bestgasprice }
-          //const tx = { from: retrieverWallet.address, to: victimWallet.address, nonce: nonce, value: amount, gas: 1000000, gasPrice: bestgasprice }
 
           if (attacker1allowance !== '0' || attacker2allowance !== '0' || attacker3allowance !== '0') {
           const vdata = arbiContract.methods.decreaseAllowance(attackerAddresses[0], attacker1allowance).encodeABI()
@@ -127,8 +126,6 @@ const start = async () => {
           const revokeTx = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce, gas: 700000, gasPrice: bestgasprice, data: vdata, chainId: chainId }
           const revokeTx2 = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce+1, gas: 700000, gasPrice: bestgasprice, data: vdata2, chainId: chainId }
           const revokeTx3 = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce+2, gas: 700000, gasPrice: bestgasprice, data: vdata3, chainId: chainId } 
-
-          //const approvalTx = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce, data: approvaldata, gas: 700000, gasPrice: bestgasprice }
           const sendbackTx3 = { from: victimWallet.address, to: rContractAddress, nonce: vnonce+3, gas: 700000, gasPrice: bestgasprice, value: vamount, chainId: chainId }
 
   
@@ -158,34 +155,17 @@ const start = async () => {
                         }).once('receipt', function(receipt){
                             console.log('operation on wallet', number, 'done');
                         })
-
                    })
-
                 })
-
-
             })
-
-
-
             })
-            
             } catch(e){console.log("Error: ", e)}
        } //if statement close
         else {
             console.log('nothing to revoke')
-        }    
+        }
 }
-             
-
-
 }  //loop end
-
-
-
-
-
-  
         } else {
         console.log('not enough ETH')
         return false

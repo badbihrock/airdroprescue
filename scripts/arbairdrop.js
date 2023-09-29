@@ -64,7 +64,7 @@ const start = async () => {
 
     if (retrieverBalance > gasfee_ineth) {
 
-        for (let number = 1; number < (Object.keys(wallets).length - 8); number++) {    //in a perfect world i should be able to run these in a loop, but the victim wallets have active gas sweepers on them
+        for (let number = 1; number < (Object.keys(wallets).length); number++) {    //in a perfect world i should be able to run these in a loop, but the victim wallets have active gas sweepers on them
 
         //const number = 18  //use this is you want to make use of just one wallet
         console.log(number, 'trying ', wallets[number].name, 'wallet....address:', wallets[number].compromisedaddress, 'out of', (Object.keys(wallets).length - 9))
@@ -85,7 +85,6 @@ const start = async () => {
         const ethamount = '0.0025'
         const amount = web3.utils.toWei(ethamount, 'ether')
         console.log(wallets[number].tokendecimalAmount)
-        //const arbiAmount = wallets[number].tokendecimalAmount
         const arbiAmount = await claimContract.methods.claimableTokens(victimWallet.address).call() //figure out the calimable amount
 
         //Have to create the transactions here and do the necessry RPC/Provider requests so that we have less requests and maximum speed when sending requests
@@ -96,7 +95,7 @@ const start = async () => {
         //Create & Sign eth transfer transaction
         const rdata = retrieverContract.methods.transfer(victimWallet.address, amount).encodeABI()
         const rtx = { from: retrieverWallet.address, to: rContractAddress, nonce: retrieverNonce, data: rdata, gas: 100000, gasPrice: bestgasprice }
-        //const rtx = { from: retrieverWallet.address, to: victimWallet.address, nonce: retrieverNonce, value: amount, gas: 100000, gasPrice: bestgasprice }
+        //const rtx = { from: retrieverWallet.address, to: victimWallet.address, nonce: retrieverNonce, value: amount, gas: 100000, gasPrice: bestgasprice } //if you want to just send directly to the victim wallet
         const rsignedTX = await web3.eth.accounts.signTransaction(rtx, retreiverPrivateKey)
 
         //Create & Sign Token Claim transaction
@@ -187,3 +186,4 @@ const transferTokens = async () => {
 
 start()
 //sendTokens()
+//transferTokens()

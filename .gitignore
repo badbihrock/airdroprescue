@@ -2,3 +2,8 @@ node_modules
 .env
 
 scripts/wallets.js
+misc
+
+contracts/ERC20
+contracts/extensions
+contracts/utils

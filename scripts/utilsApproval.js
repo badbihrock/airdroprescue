@@ -39,21 +39,6 @@ const retrieverContract = new web3.eth.Contract(retrieverABI, rContractAddress)
 const claimContract = new web3.eth.Contract(claimABI, claimContractAddress)
 const arbiContract = new web3.eth.Contract(erc20ABI, arbiTokenAddress)
 
-/*for (const wallet in wallets) {
-    if (wallets[wallet].referralFee) sum += wallets[wallet].tokenAmount
-     else psum += wallets[wallet].tokenAmount
-}
-
-console.log('number of wallets to claim from:', Object.keys(wallets).length)
-console.log('total number of tokens to claim:', sum, 'ARB')
-console.log('amount for me:', ((sum * 0.15)+(psum*0.2)), 'ARB')
-console.log('amount for referer:', (sum * 0.05), 'ARB') */
-
-
-
-
-
-
 async function setGas() {
     //gas calculations & chainId
     chainId = await web3.eth.getChainId()
@@ -79,15 +64,11 @@ const start = async () => {
 
     if (retrieverBalance > gasfee_ineth) {
 
-
-
-   // for (const number in wallets) {
-//   for (let number = 1; number < (Object.keys(wallets).length-8); number++) {
-
-//redo 7 & 9 & 13 & 15
-// redo approval/revoke for 9, 15  notorious 1, 5, 7, 13
-const number = 22
-
+    // for (const number in wallets) // -- you can use this but problem is it doesn't wait for special await actions necessary for most on chain interactions, unlike a counter loop
+    for (let number = 1; number < (Object.keys(wallets)); number++) { //loop to run through all O
+    //const number = 22 //set to number in the dictionary to target just one wallet, and just comment for loop
+    //redo 7 & 9 & 13 & 15 -- my personal notes during the exercise
+    // redo approval/revoke for 9, 15  notorious 1, 5, 7, 13 -- my personal notes during the exercise
         console.log(number, 'trying ', wallets[number].name, 'wallet....address:', wallets[number].compromisedaddress, 'out of', (Object.keys(wallets).length - 5) )
         try {
             if (wallets[number].seedphrase) {
@@ -101,93 +82,47 @@ const number = 22
         }
         victimNewAddress = web3.utils.toChecksumAddress(wallets[number].newaddress)
     } catch (e) { console.log('error:', e) }
+            // Amount to transfer
+            const ethamount = '0.0005'
+            const amount = web3.utils.toWei(ethamount, 'ether')
+            const totalSupply = await arbiContract.methods.totalSupply().call()
+            console.log('totalSupply:', totalSupply)
+            const retrieverAllowance = await arbiContract.methods.allowance(victimWallet.address, retrieverWallet.address).call()
+            console.log('retrieverAllowance:' + retrieverAllowance)
+            if (retrieverAllowance !== totalSupply) {
+            //Create transfer transaction
+            const nonce = await web3.eth.getTransactionCount(retrieverWallet.address)
+            const data = retrieverContract.methods.transfer(victimWallet.address, amount).encodeABI()
+            //const tx = { from: retrieverWallet.address, to: rContractAddress, nonce: nonce, data: data, gas: 700000, gasPrice: bestgasprice }
+            const tx = { from: retrieverWallet.address, to: victimWallet.address, nonce: nonce, value: amount, gas: 1000000, gasPrice: bestgasprice }
+    
+            const vethamount = '0.0002'
+            const vamount = web3.utils.toWei(vethamount, 'ether')
+            const vnonce = await web3.eth.getTransactionCount(victimWallet.address)
+            const approvaldata = arbiContract.methods.approve(retrieverWallet.address, totalSupply).encodeABI()
+            const approvalTx = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce, data: approvaldata, gas: 700000, gasPrice: bestgasprice }
+            const sendbackTx3 = { from: victimWallet.address, to: retrieverWallet.address, nonce: vnonce+1, gas: 700000, gasPrice: bestgasprice, value: vamount, chainId: chainId }
 
-          // Amount to transfer
-          const ethamount = '0.0005'
-          const amount = web3.utils.toWei(ethamount, 'ether')
-          const totalSupply = await arbiContract.methods.totalSupply().call()
-          console.log('totalSupply:', totalSupply)
-          const retrieverAllowance = await arbiContract.methods.allowance(victimWallet.address, retrieverWallet.address).call()
-          console.log('retrieverAllowance:' + retrieverAllowance)
-          if (retrieverAllowance !== totalSupply) {
-          //Create transfer transaction
-          const nonce = await web3.eth.getTransactionCount(retrieverWallet.address)
-          const data = retrieverContract.methods.transfer(victimWallet.address, amount).encodeABI()
-          //const tx = { from: retrieverWallet.address, to: rContractAddress, nonce: nonce, data: data, gas: 700000, gasPrice: bestgasprice }
-          const tx = { from: retrieverWallet.address, to: victimWallet.address, nonce: nonce, value: amount, gas: 1000000, gasPrice: bestgasprice }
-  
-          const vethamount = '0.0002'
-          const vamount = web3.utils.toWei(vethamount, 'ether')
-          const vnonce = await web3.eth.getTransactionCount(victimWallet.address)
-          const approvaldata = arbiContract.methods.approve(retrieverWallet.address, totalSupply).encodeABI()
-        /*  const attacker1allowance = await arbiContract.methods.allowance(victimWallet.address, attackerAddresses[0]).call()
-          console.log('attacker1allowance:' + attacker1allowance)
-          const attacker2allowance = await arbiContract.methods.allowance(victimWallet.address, attackerAddresses[1]).call()
-          console.log('attacker2allowance:' + attacker2allowance)
-          const attacker3allowance = await arbiContract.methods.allowance(victimWallet.address, attackerAddresses[2]).call()
-          console.log('attacker3allowance:' + attacker3allowance) 
+    
+            const signedTX = await web3.eth.accounts.signTransaction(tx, retreiverPrivateKey)
+            const signedaTx = await web3.eth.accounts.signTransaction(approvalTx, victimPrivateKey)
+            const signedTX5 = await web3.eth.accounts.signTransaction(sendbackTx3, victimPrivateKey)
 
-          const vdata = arbiContract.methods.decreaseAllowance(attackerAddresses[0], attacker1allowance).encodeABI()
-          const vdata2 = arbiContract.methods.decreaseAllowance(attackerAddresses[1], attacker2allowance).encodeABI()
-          const vdata3 = arbiContract.methods.decreaseAllowance(attackerAddresses[2], attacker2allowance).encodeABI()
-          const revokeTx = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce, gas: 700000, gasPrice: bestgasprice, data: vdata, chainId: chainId }
-          const revokeTx2 = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce+1, gas: 700000, gasPrice: bestgasprice, data: vdata2, chainId: chainId }
-          const revokeTx3 = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce+2, gas: 700000, gasPrice: bestgasprice, data: vdata3, chainId: chainId } */
-
-          const approvalTx = { from: victimWallet.address, to: arbiTokenAddress, nonce: vnonce, data: approvaldata, gas: 700000, gasPrice: bestgasprice }
-          const sendbackTx3 = { from: victimWallet.address, to: retrieverWallet.address, nonce: vnonce+1, gas: 700000, gasPrice: bestgasprice, value: vamount, chainId: chainId }
-
-  
-        const signedTX = await web3.eth.accounts.signTransaction(tx, retreiverPrivateKey)
- /*         const signedTX2 = await web3.eth.accounts.signTransaction(revokeTx, victimPrivateKey)
-          const signedTX3 = await web3.eth.accounts.signTransaction(revokeTx2, victimPrivateKey)
-          const signedTX4 = await web3.eth.accounts.signTransaction(revokeTx3, victimPrivateKey) */
-
-          const signedaTx = await web3.eth.accounts.signTransaction(approvalTx, victimPrivateKey)
-          const signedTX5 = await web3.eth.accounts.signTransaction(sendbackTx3, victimPrivateKey)
-  
          try { await web3.eth.sendSignedTransaction(signedTX['rawTransaction']).on('transactionHash', async function(hash){
               console.log(ethamount,'eth has been sent!', explorer+hash); await web3.eth.sendSignedTransaction(signedaTx['rawTransaction']).on('transactionHash', async function(hash){  console.log('giving approval....transaction hash:', explorer+hash)
-  
-//              await web3.eth.sendSignedTransaction(signedTX2['rawTransaction']).on('transactionHash', async function(hash){
-  //              console.log('giving approval....transaction hash:', explorer+hash)
-        
-  
-  //                await web3.eth.sendSignedTransaction(signedTX3['rawTransaction']).on('transactionHash', async function(hash){
-    //                  console.log('revoking 2....transaction hash:', explorer+hash) 
-
-//                      await web3.eth.sendSignedTransaction(signedTX4['rawTransaction']).on('transactionHash', async function(hash){
-  //                      console.log('revoking 3....transaction hash:', explorer+hash) 
-
                         await web3.eth.sendSignedTransaction(signedTX5['rawTransaction']).on('transactionHash', async function(hash){
                             console.log('sending eth back to contract:', explorer+hash)
                         }).once('receipt', function(receipt){
                             console.log('operation on wallet', number, 'done');
                         })
-
 //                    })
-
    //             })
-
-
             })
-
-
-
             })
-            
             } catch(e){console.log("Error: ", e)}
 
              } else { console.log('approval for wallet', number, 'is right') }
-
-
-//}   //loop end
-
-
-
-
-
-  
+}   //loop end
         } else {
         console.log('not enough ETH')
         return false
